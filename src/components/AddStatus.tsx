@@ -28,6 +28,7 @@ export const AddStatus: React.FC<AddStatusProps> = ({
   };
   const [formValues, setFormValues] = useState(initialValues);
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const userSetDate = useRef(false);
   const { data: jobs } = useSWR("/api/jobs");
   const currentJob = jobs?.find((j: Jobject) => j.id === id);
 
@@ -48,6 +49,16 @@ export const AddStatus: React.FC<AddStatusProps> = ({
     return () =>
       dialogRef?.current?.removeEventListener("close", handleDialogClose);
   }, [id]);
+  console.log(userSetDate.current);
+
+  useEffect(() => {
+    if (!userSetDate.current) {
+      setFormValues((prev) => ({
+        ...prev,
+        applied_date: today,
+      }));
+    }
+  }, [today]);
 
   const addEvent = async () => {
     const response = await fetch("/api/events", {
@@ -66,12 +77,16 @@ export const AddStatus: React.FC<AddStatusProps> = ({
     dialogRef?.current?.close();
     setAddingStatusId(null);
     setFormValues(initialValues);
+    userSetDate.current = false;
   };
 
   const handleFieldValueChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
+    if (name === EventParamNames.EVENT_DATE) {
+      userSetDate.current = true;
+    }
     setFormValues((prev) => {
       return { ...prev, [name]: value };
     });

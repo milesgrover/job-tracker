@@ -23,7 +23,34 @@ export const ApplicationsTable: React.FC<ApplicationsTableProps> = ({
 }) => {
   return (
     <ShowLoader message="loading jobs...">
-      <table className="border-collapse border-3 border-white mt-4 mb-10 w-full text-sm h-full">
+      <div className="grid grid-cols-[min-content_2fr_min-content_1fr_2fr] bg-white gap-1 p-1 mt-4 mb-10 w-full text-sm h-full">
+        {headings.map((f) => {
+          return (
+            <div
+              className="p-4 text-xs uppercase text-center content-center bg-background"
+              key={f}
+            >
+              {FieldLabels[f as FieldNames] ?? f}
+            </div>
+          );
+        })}
+        {filteredJobs?.map((job) => {
+          const dateString = new Date(job.applied_date).toLocaleDateString();
+          if (dateString !== lastDate) {
+            toggle = 1 - toggle;
+            lastDate = dateString;
+          }
+          return (
+            <ApplicationRow
+              key={job.id}
+              job={job}
+              styleToggle={toggle}
+              setAddingStatusId={setAddingStatusId}
+            />
+          );
+        })}
+      </div>
+      {/* <table className="border-collapse border-3 border-white mt-4 mb-10 w-full text-sm h-full">
         <thead>
           <tr>
             {headings.map((f) => {
@@ -55,7 +82,7 @@ export const ApplicationsTable: React.FC<ApplicationsTableProps> = ({
             );
           })}
         </tbody>
-      </table>
+      </table> */}
     </ShowLoader>
   );
 };

@@ -8,10 +8,11 @@ import {
   useRef,
   useState,
 } from "react";
-import { FieldLabels, FieldNames, JobPostBody } from "@/types/jobs";
+import { FieldLabels, FieldNames, Jobject, JobPostBody } from "@/types/jobs";
 import { Loader } from "./Loader";
 import useSWR from "swr";
 import { useToday } from "@/hooks/useToday";
+import { EventType } from "@/types/events";
 
 interface FieldProperties {
   name: FieldNames;
@@ -65,6 +66,12 @@ export const NewJobForm = () => {
     }
   }, [today]);
 
+  useEffect(() => {
+    if (formValues.applied_date === today) {
+      userSetDate.current = false;
+    }
+  }, [formValues.applied_date]);
+
   const validateForm = () => {
     return fields.every(({ name, required }) => {
       return !!formValues[name] || !required;
@@ -79,31 +86,52 @@ export const NewJobForm = () => {
       userSetDate.current = true;
     }
     setFormValues((prev) => {
-      return {
+      const newFormValues = {
         ...prev,
         [name]: value,
       };
+      return newFormValues;
     });
   };
 
   const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setSendingJob(true);
+
+    const newJob: Jobject = {
+      ...formValues,
+      id: Math.random(), // temporary ID for optimistic UI
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      status: EventType.Applied,
+    };
     try {
-      setSendingJob(true);
-      const res = await fetch("/api/jobs", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formValues),
-      });
+      await mutate(
+        async (currentJobs: Jobject[] = []) => {
+          const res = await fetch("/api/jobs", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(formValues),
+          });
 
-      if (!res.ok) throw new Error("Failed to create job");
-
-      await mutate();
+          if (!res.ok) throw new Error("Failed to create job");
+          const createdJob = await res.json();
+          return [...currentJobs, createdJob];
+        },
+        {
+          optimisticData: (currentJobs: Jobject[] = []) => [
+            ...currentJobs,
+            newJob,
+          ],
+          rollbackOnError: true,
+          revalidate: false,
+        }
+      );
 
       setError("");
       setFormValues(initialValues);
-      setSendingJob(false);
       userSetDate.current = false;
+      setSendingJob(false);
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);

@@ -4,9 +4,7 @@ import { StatusTimeline } from "./StatusTimeline";
 import { useState } from "react";
 import { EditButtons } from "./EditButtons";
 import useSWR from "swr";
-import { ShowLoader } from "./ShowLoader";
 import { Loader } from "./Loader";
-// import { mutate } from "swr";
 
 interface ApplicationRowProps {
   job: Jobject;
@@ -80,12 +78,25 @@ export const ApplicationRow: React.FC<ApplicationRowProps> = ({
   };
 
   const dateString = new Date(applied_date).toLocaleDateString();
+
+  const cellStyle = ({ padding = true, relative = false } = {}) => {
+    const styles = [];
+    if (styleToggle) {
+      styles.push("bg-zinc-800");
+    } else {
+      styles.push("bg-background");
+    }
+    if (padding) {
+      styles.push("p-4");
+    }
+    if (relative) {
+      styles.push("relative");
+    }
+    return styles.join(" ");
+  };
   return (
-    <tr
-      key={id}
-      className={styleToggle ? "bg-neutral-800 relative" : "relative"}
-    >
-      <td className="border-3 border-white p-4 align-top">
+    <div className="grid grid-cols-subgrid col-span-full relative">
+      <div className={cellStyle()}>
         {isLoading && (
           <div className="absolute bg-black/60 inset-0 text-lime-600 z-2">
             <div className="absolute max-w-50 inset-0 m-auto grid items-center">
@@ -93,6 +104,7 @@ export const ApplicationRow: React.FC<ApplicationRowProps> = ({
             </div>
           </div>
         )}
+
         <div className="max-w-50 truncate">
           {editMode ? (
             <input
@@ -108,8 +120,8 @@ export const ApplicationRow: React.FC<ApplicationRowProps> = ({
             </BasicLink>
           )}
         </div>
-      </td>
-      <td className="text-xs whitespace-pre-wrap border-3 border-white align-top h-full">
+      </div>
+      <div className={cellStyle({ padding: false })}>
         {editMode ? (
           <textarea
             name={FieldNames.REQUIREMENTS}
@@ -122,8 +134,8 @@ export const ApplicationRow: React.FC<ApplicationRowProps> = ({
             {requirements}
           </div>
         )}
-      </td>
-      <td className="border-3 border-white p-4 align-top">
+      </div>
+      <div className={cellStyle()}>
         {editMode ? (
           <input
             name={FieldNames.APPLIED_DATE}
@@ -135,8 +147,8 @@ export const ApplicationRow: React.FC<ApplicationRowProps> = ({
         ) : (
           dateString
         )}
-      </td>
-      <td className="border-3 border-white p-4 align-top">
+      </div>
+      <div className={cellStyle()}>
         <div className="flex flex-col h-full">
           <div className="flex-1">
             <StatusTimeline
@@ -154,8 +166,8 @@ export const ApplicationRow: React.FC<ApplicationRowProps> = ({
             </button>
           )}
         </div>
-      </td>
-      <td className="border-3 border-white p-4 pr-12 align-top relative">
+      </div>
+      <div className={cellStyle({ relative: true })}>
         {editMode ? (
           <>
             <input
@@ -218,7 +230,7 @@ export const ApplicationRow: React.FC<ApplicationRowProps> = ({
             onClickConfirm={handleSubmitUpdate}
           />
         </div>
-      </td>
-    </tr>
+      </div>
+    </div>
   );
 };
