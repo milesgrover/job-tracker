@@ -1,6 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Jacquard+12&family=Press+Start+2P&family=Jersey+10&display=swap");
 @import "tailwindcss";
-@source inline("grid-cols-{1..12}");
 
 :root {
   --foreground: #ffffff;
@@ -12,7 +10,7 @@
   --color-foreground: var(--foreground);
   --font-display: "Jacquard 12", system-ui;
   --font-body: "Press Start 2P", system-ui;
-  --font-longtext: "Jersey 10", system-ui;
+  --font-longtext: "Press Start 2P", system-ui;
 }
 
 body {

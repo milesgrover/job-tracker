@@ -1,4 +1,4 @@
-import { EventType } from "./events";
+import { EventType, Event } from "./events";
 
 export interface JobPostBody {
   url: string;
@@ -20,6 +20,10 @@ export type Jobject = JobPostBody & {
   status: EventType;
 };
 
+export type JobWithEvents = Jobject & {
+  events: Event[];
+};
+
 export enum FieldNames {
   URL = "url",
   REQUIREMENTS = "requirements",
@@ -32,7 +36,7 @@ export enum FieldNames {
 }
 
 export const FieldLabels: Record<FieldNames, string> = {
-  [FieldNames.URL]: "job post link",
+  [FieldNames.URL]: "job\u00A0post link",
   [FieldNames.REQUIREMENTS]: "requirements",
   [FieldNames.TITLE]: "job title",
   [FieldNames.COMPANY]: "company",

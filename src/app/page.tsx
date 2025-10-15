@@ -2,36 +2,72 @@
 import { AddStatus } from "@/components/AddStatus";
 import { ApplicationsTable } from "@/components/ApplicationsTable";
 import { NewJobForm } from "@/components/NewJobForm";
-import { useState } from "react";
-import useSWR from "swr";
-import { SearchBar } from "@/components/SearchBar";
-import { Jobject } from "@/types/jobs";
+import { useMemo, useState } from "react";
+import useSWR, { useSWRConfig } from "swr";
+import { Jobject, JobWithEvents } from "@/types/jobs";
 import { JobsToday } from "@/components/JobsToday";
+import { SearchBar } from "@/components/SearchBar";
+import {
+  Sort,
+  sortCompanyAZ,
+  sortCompanyZA,
+  sortLocation,
+  SortModes,
+  sortNewest,
+  sortOldest,
+  sortUpdated,
+} from "@/components/Sort";
+import { Filter, FilterModes } from "@/components/Filter";
+import { useFilter } from "@/hooks/useFilter";
 
 export default function Home() {
   const { data: jobs, mutate, error, isLoading } = useSWR("/api/jobs");
+  const { cache } = useSWRConfig();
 
   const [addingStatusId, setAddingStatusId] = useState<number | null>(null);
   const [searchString, setSearchString] = useState("");
+  const [sortMode, setSortMode] = useState(SortModes.NEWEST);
+  const [filterMode, setFilterMode] = useState(FilterModes.ALL);
 
-  const sortNewest = (a: Jobject, b: Jobject) => {
-    const newest =
-      new Date(b.applied_date).getTime() - new Date(a.applied_date).getTime();
-    if (newest === 0) {
-      // if the dates are the same, sort by id
-      return b.id - a.id;
-    }
-    return newest;
+  const sortFunctions = {
+    [SortModes.NEWEST]: sortNewest,
+    [SortModes.OLDEST]: sortOldest,
+    [SortModes.UPDATED]: sortUpdated,
+    [SortModes.LOCATION]: sortLocation,
+    [SortModes.COMPANY_A_Z]: sortCompanyAZ,
+    [SortModes.COMPANY_Z_A]: sortCompanyZA,
   };
 
-  const filteredJobs = jobs
-    ?.filter((job: Jobject) => {
-      return (
-        job.company?.toLowerCase().includes(searchString.toLowerCase()) ||
-        job.title?.toLowerCase().includes(searchString.toLowerCase())
-      );
-    })
-    .sort(sortNewest);
+  const {
+    filterAll,
+    filterInterviewing,
+    filterRecent,
+    filterNotRejected,
+    filterRejected,
+    filterRemote,
+    filterNotRemote,
+  } = useFilter(searchString);
+
+  const filterFunctions = {
+    [FilterModes.ALL]: filterAll,
+    [FilterModes.INTERVIEWING]: filterInterviewing,
+    [FilterModes.RECENT]: filterRecent,
+    [FilterModes.NOT_REJECTED]: filterNotRejected,
+    [FilterModes.REJECTED]: filterRejected,
+    [FilterModes.REMOTE]: filterRemote,
+    [FilterModes.NOT_REMOTE]: filterNotRemote,
+  };
+
+  const filteredJobs = useMemo(() => {
+    return jobs
+      ?.map((job: Jobject) => {
+        // add the events to each job to make sorting and filtering easier
+        const events = cache.get(`/api/events?job_id=${job.id}`)?.data;
+        return { ...job, events: [...events] };
+      })
+      .filter(filterFunctions[filterMode])
+      .sort(sortFunctions[sortMode]);
+  }, [JSON.stringify(jobs), sortMode, searchString, filterMode]);
 
   return (
     <div className="font-body grid place-items-center h-full">
@@ -45,11 +81,17 @@ export default function Home() {
         <NewJobForm />
         <div className="grid grid-cols-2">
           <h2 className="font-display text-6xl text-sky-500">Applications</h2>
+          <div className="text-xs justify-self-end self-center">
+            Showing {filteredJobs.length} of {jobs.length} jobs
+          </div>
+        </div>
+        <div className="grid grid-cols-[2fr_1fr_1fr] my-4 gap-4">
           <SearchBar
             searchString={searchString}
             setSearchString={setSearchString}
-            disabled={!jobs || isLoading}
           />
+          <Sort setSortMode={setSortMode} />
+          <Filter setFilterMode={setFilterMode} />
         </div>
         <ApplicationsTable
           filteredJobs={filteredJobs}

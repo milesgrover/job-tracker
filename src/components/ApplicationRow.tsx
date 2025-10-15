@@ -130,7 +130,7 @@ export const ApplicationRow: React.FC<ApplicationRowProps> = ({
             onChange={handleInputChange}
           ></textarea>
         ) : (
-          <div className="max-h-54 overflow-auto p-4 min-h-full font-longtext text-2xl">
+          <div className="max-h-54 overflow-auto p-4 min-h-full font-longtext text-xs">
             {requirements}
           </div>
         )}

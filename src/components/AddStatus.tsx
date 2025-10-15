@@ -49,16 +49,21 @@ export const AddStatus: React.FC<AddStatusProps> = ({
     return () =>
       dialogRef?.current?.removeEventListener("close", handleDialogClose);
   }, [id]);
-  console.log(userSetDate.current);
 
   useEffect(() => {
     if (!userSetDate.current) {
       setFormValues((prev) => ({
         ...prev,
-        applied_date: today,
+        event_date: today,
       }));
     }
   }, [today]);
+
+  useEffect(() => {
+    if (formValues.event_date === today) {
+      userSetDate.current = false;
+    }
+  }, [formValues.event_date]);
 
   const addEvent = async () => {
     const response = await fetch("/api/events", {
@@ -66,7 +71,7 @@ export const AddStatus: React.FC<AddStatusProps> = ({
       body: JSON.stringify({ job_id: id, ...formValues }),
     });
     if (!response.ok) throw new Error("failed to add event");
-    mutate(`/api/events?job_id=${id}`);
+    await mutate(`/api/events?job_id=${id}`);
   };
 
   const validateForm = () => {

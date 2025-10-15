@@ -66,7 +66,6 @@ export const StatusTimeline: React.FC<StatusTimelineProps> = ({
       method: "PUT",
       body: JSON.stringify(newValues),
     });
-    console.log(res);
     if (!res.ok) throw new Error("failed to update event");
     await mutate();
     setEditingEventId(null);

@@ -12,7 +12,7 @@ export const BasicLink = (props: React.ComponentPropsWithoutRef<"a">) => {
     return Array.from(classSet).join(" ");
   };
   return (
-    <a className={combineClass()} {...rest}>
+    <a className={combineClass()} target="_blank" {...rest}>
       {children}
     </a>
   );

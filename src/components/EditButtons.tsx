@@ -18,6 +18,7 @@ export const EditButtons: React.FC<EditButtonsProps> = ({
       {editMode ? (
         <>
           <button
+            name="cancel_edit"
             className="text-xs bg-sky-900 p-2 active:translate-y-1 disabled:bg-gray-400 disabled:text-gray-500"
             onClick={() => onClickCancel()}
             disabled={disabled}
@@ -25,6 +26,7 @@ export const EditButtons: React.FC<EditButtonsProps> = ({
             <div className="icon-base icon-cancel bg-slate-300" />
           </button>
           <button
+            name="confirm_edit"
             className="text-xs bg-sky-900 p-2 active:translate-y-1 disabled:bg-gray-400 disabled:text-gray-500"
             onClick={() => onClickConfirm()}
             disabled={disabled}
@@ -34,6 +36,7 @@ export const EditButtons: React.FC<EditButtonsProps> = ({
         </>
       ) : (
         <button
+          name="enter_edit_mode"
           className="text-xs bg-sky-900 p-2 active:translate-y-1 disabled:bg-gray-400 disabled:text-gray-500"
           onClick={() => onClickEdit()}
           disabled={disabled}

@@ -11,3 +11,10 @@ export const fetcher = async (url: string) => {
 };
 
 export const underscoresToSpaces = (str: string) => str.replace("_", " ");
+
+export const isWithinLastDays = (date: Date, days: number) => {
+  const now = new Date();
+  const cutoff = new Date();
+  cutoff.setDate(now.getDate() - days);
+  return date >= cutoff && date <= now;
+};
